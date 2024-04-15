@@ -23,7 +23,7 @@ Today = datetime.date.today()
 TodayMidnight = datetime.datetime.combine(Today, datetime.time.min)
 
 # Date du début de la station :
-StartStation = datetime.datetime(2021, 10, 1, 0, 0)
+StartStation = datetime.datetime(2021, 9, 29, 0, 0)
 
 # Convertir la date en timestamp
 StartStationTimestamp = int(StartStation.timestamp())
