@@ -5,6 +5,8 @@ import requests
 import json
 import tqdm
 
+from Codes import SecretsAPI, SecretsBDD
+
 from sqlalchemy import create_engine
 import psycopg2
 from sqlalchemy.types import Integer, BigInteger, JSON
@@ -12,11 +14,10 @@ from sqlalchemy.types import Integer, BigInteger, JSON
 
 # Récupération de la TS la plus récente :
 # Paramètres de connexion à la base de données PostgreSQL en local :
-host = "localhost"
-database = "Test_LPO"
-user = "postgres"
-password = "15072022"
-nomtable = 'historiquemeteo'
+host = SecretsBDD.get('host')
+database = SecretsBDD.get('database')
+user = SecretsBDD.get('user')
+password = SecretsBDD.get('password')
 
 # Connexion à la base de données
 conn = psycopg2.connect(dbname = database, user = user, password = password , host = host)
@@ -42,11 +43,12 @@ LastLoadTimestamp = df.values[0][0]
 
 
 # Ouverture de l'API et récupération des données :
-# Informations API : https://weatherlink.github.io/v2-api/
+# Informations : https://weatherlink.github.io/v2-api/
 
-APIKey = 'zjbvtfdvjslxklxclzscfu6isqpqfxbg'
-APISecret = 'mih0udjsuetwaatpwzrqzeglljmy889b'
-StationID = 122495
+APIKey = SecretsAPI.get('APIKey')
+APISecret = SecretsAPI.get('APISecret')
+StationID = SecretsAPI.get('StationID')
+nomtable = 'historiquemeteo'
 
 # Création du TS de ce matin à 00h00 :
 Today = datetime.date.today()
