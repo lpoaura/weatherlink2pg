@@ -1,24 +1,39 @@
 # Librairies et options :
+# Divers :
 import pandas as pd
 import datetime
 import requests
 import json
 import tqdm
 
-from Codes import SecretsAPI, SecretsBDD
+# Importer les codes depuis un fichier .env :
+from dotenv import load_dotenv
+import os
+load_dotenv()
 
+# Création et lecture des BDD postgresl :
 from sqlalchemy import create_engine
-import psycopg2
 from sqlalchemy.types import Integer, BigInteger, JSON
+import psycopg2
 
 
-# Récupération de la TS la plus récente :
+
+# Clés API et BDD :
+# Informations API : https://weatherlink.github.io/v2-api/
+# Clés API :
+APIKey = os.getenv("APIKey")
+APISecret = os.getenv("APISecret")
+stationID = os.getenv("stationID")
+
 # Paramètres de connexion à la base de données PostgreSQL en local :
-host = SecretsBDD.get('host')
-database = SecretsBDD.get('database')
-user = SecretsBDD.get('user')
-password = SecretsBDD.get('password')
+host = os.getenv("host")
+database = os.getenv("database")
+user = os.getenv("user")
+password = os.getenv("password")
+nomTable = os.getenv("nomTable")
 
+
+# Récupération de la TS la plus récente dans la table :
 # Connexion à la base de données
 conn = psycopg2.connect(dbname = database, user = user, password = password , host = host)
 
@@ -39,34 +54,30 @@ cur.close()
 conn.close()
 
 # Récupération de la ts la plus récente de la BDD :
-LastLoadTimestamp = df.values[0][0]
+lastLoadTimestamp = df.values[0][0]
+
 
 
 # Ouverture de l'API et récupération des données :
 # Informations : https://weatherlink.github.io/v2-api/
 
-APIKey = SecretsAPI.get('APIKey')
-APISecret = SecretsAPI.get('APISecret')
-StationID = SecretsAPI.get('StationID')
-nomtable = 'historiquemeteo'
-
 # Création du TS de ce matin à 00h00 :
-Today = datetime.date.today()
-TodayMidnight = datetime.datetime.combine(Today, datetime.time.min)
-TodayMidnightTimestamp = int(TodayMidnight.timestamp())
+today = datetime.date.today()
+todayMidnight = datetime.datetime.combine(today, datetime.time.min)
+todayMidnightTimestamp = int(todayMidnight.timestamp())
 
 # DataFrame nouvelles données :
 dfNew = pd.DataFrame()
 
 # Nb de jours à récupérer :
-NbJours = int((TodayMidnightTimestamp - LastLoadTimestamp) / 86400)
+nbJours = int((todayMidnightTimestamp - lastLoadTimestamp) / 86400)
 
-for i in tqdm.tqdm(range(NbJours)):
-    StartTime = LastLoadTimestamp + i * 86400
-    EndTime = StartTime + 86400
+for i in tqdm.tqdm(range(nbJours)):
+    startTime = lastLoadTimestamp + i * 86400
+    endTime = startTime + 86400
     
     # Lien de la request : 
-    link = 'https://api.weatherlink.com/v2/historic/{}?api-key={}&start-timestamp={}&end-timestamp={}'.format(StationID, APIKey, StartTime, EndTime)
+    link = 'https://api.weatherlink.com/v2/historic/{}?api-key={}&start-timestamp={}&end-timestamp={}'.format(stationID, APIKey, startTime, endTime)
     headers = {'X-Api-Secret' : APISecret}
 
     # Requête :
@@ -101,12 +112,11 @@ for i in tqdm.tqdm(range(NbJours)):
 
 
 # Transfert nouvelles données sur PostgreSQL :
-
 # Création de la chaîne de connexion PostgreSQL :
-conn_str = f"postgresql://{user}:{password}@{host}/{database}"
+connStr = f"postgresql://{user}:{password}@{host}/{database}"
 
 # Création de la connexion à la base de données PostgreSQL :
-engine = create_engine(conn_str)
+engine = create_engine(connStr)
 
 # Définir les types de données pour chaque colonne :
 dtype = {'station_id': Integer(),
@@ -114,7 +124,7 @@ dtype = {'station_id': Integer(),
          'infos_json': JSON}
 
 # Ajouter le DataFrame dans la base de données PostgreSQL :
-dfNew.to_sql(nomtable, engine, if_exists = 'append', index=False, dtype=dtype)
+dfNew.to_sql(nomTable, engine, if_exists = 'append', index=False, dtype=dtype)
 
 # Fermeture de la connexion :
 engine.dispose()

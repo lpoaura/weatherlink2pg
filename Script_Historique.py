@@ -1,35 +1,54 @@
-# pip install pandas sqlalchemy
+# pip install pandas sqlalchemy psycopg2-binary python-dotenv
+
+
 
 # Librairies et options :
+# Divers :
 import pandas as pd
 import datetime
 import requests
 import json
 import tqdm
 
-from Codes import SecretsAPI, SecretsBDD
+# Importer les codes depuis un fichier .env :
+from dotenv import load_dotenv
+import os
+load_dotenv()
 
+# Création et lecture des BDD postgresl :
 from sqlalchemy import create_engine
 from sqlalchemy.types import Integer, BigInteger, JSON
 
 
-# Informations sur l'API : https://weatherlink.github.io/v2-api/
-APIKey = SecretsAPI.get('APIKey')
-APISecret = SecretsAPI.get('APISecret')
-StationID = SecretsAPI.get('StationID')
+
+# Clés API et BDD :
+# Informations API : https://weatherlink.github.io/v2-api/
+# Clés API :
+APIKey = os.getenv("APIKey")
+APISecret = os.getenv("APISecret")
+stationID = os.getenv("stationID")
+
+# Paramètres de connexion à la base de données PostgreSQL en local :
+host = os.getenv("host")
+database = os.getenv("database")
+user = os.getenv("user")
+password = os.getenv("password")
+nomTable = os.getenv("nomTable")
+
 
 
 # Création des TS pour l'utilisation de l'option temps sur l'API :
 # Date d'aujourd'hui à minuit :
-Today = datetime.date.today()
-TodayMidnight = datetime.datetime.combine(Today, datetime.time.min)
+today = datetime.date.today()
+todayMidnight = datetime.datetime.combine(today, datetime.time.min)
 
 # Date du début de la station :
-StartStation = datetime.datetime(2021, 9, 29, 0, 0)
+startStation = datetime.datetime(2021, 9, 29, 0, 0)
 
 # Convertir la date en timestamp
-StartStationTimestamp = int(StartStation.timestamp())
-TodayMidnightTimestamp = int(TodayMidnight.timestamp())
+startStationTimestamp = int(startStation.timestamp())
+todayMidnightTimestamp = int(todayMidnight.timestamp())
+
 
 
 # Récupération des données : 
@@ -37,14 +56,14 @@ TodayMidnightTimestamp = int(TodayMidnight.timestamp())
 dfHistorique = pd.DataFrame()
 
 # Nb de jours à récupérer :
-NbJours = int((TodayMidnightTimestamp - StartStationTimestamp) / 86400)
+nbJours = int((todayMidnightTimestamp - startStationTimestamp) / 86400)
 
-for i in tqdm.tqdm(range(NbJours)):
-    StartTime = StartStationTimestamp + i * 86400
-    EndTime = StartTime + 86400
+for i in tqdm.tqdm(range(nbJours)):
+    startTime = startStationTimestamp + i * 86400
+    endTime = startTime + 86400
     
     # Lien de la request : 
-    link = 'https://api.weatherlink.com/v2/historic/{}?api-key={}&start-timestamp={}&end-timestamp={}'.format(StationID, APIKey, StartTime, EndTime)
+    link = 'https://api.weatherlink.com/v2/historic/{}?api-key={}&start-timestamp={}&end-timestamp={}'.format(stationID, APIKey, startTime, endTime)
     headers = {'X-Api-Secret' : APISecret}
 
     # Requête :
@@ -79,18 +98,11 @@ for i in tqdm.tqdm(range(NbJours)):
 
 
 # Transfert sur PostgreSQL
-# Paramètres de connexion à la base de données PostgreSQL en local :
-host = SecretsBDD.get('host')
-database = SecretsBDD.get('database')
-user = SecretsBDD.get('user')
-password = SecretsBDD.get('password')
-nomtable = 'historiquemeteo'
-
 # Création de la chaîne de connexion PostgreSQL :
-conn_str = f"postgresql://{user}:{password}@{host}/{database}"
+connStr = f"postgresql://{user}:{password}@{host}/{database}"
 
 # Création de la connexion à la base de données PostgreSQL :
-engine = create_engine(conn_str)
+engine = create_engine(connStr)
 
 # Définir les types de données pour chaque colonne :
 dtype = {'station_id': Integer(),
@@ -98,7 +110,7 @@ dtype = {'station_id': Integer(),
          'infos_json': JSON}
 
 # Insérer le DataFrame dans la base de données PostgreSQL :
-dfHistorique.to_sql(nomtable, engine, if_exists = 'replace', index=False, dtype=dtype)
+dfHistorique.to_sql(nomTable, engine, if_exists = 'replace', index=False, dtype=dtype)
 
 # Fermeture de la connexion :
 engine.dispose()
