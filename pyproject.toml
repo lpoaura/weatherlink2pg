@@ -1,0 +1,20 @@
+[tool.poetry]
+name = "lpo-weatherlink"
+version = "0.1.0"
+description = ""
+authors = ["Johan Rocheteau <johan.rocheteau@hotmail.fr>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+pandas = "^2.2.2"
+datetime = "^5.5"
+requests = "^2.31.0"
+tqdm = "^4.66.2"
+python-dotenv = "^1.0.1"
+sqlalchemy = "^2.0.29"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

@@ -1,7 +1,3 @@
-# pip install pandas sqlalchemy psycopg2-binary python-dotenv
-
-
-
 # Librairies et options :
 # Divers :
 import pandas as pd
