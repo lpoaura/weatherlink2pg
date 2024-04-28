@@ -33,43 +33,64 @@ password = os.getenv("password")
 nom_table = os.getenv("nom_table")
 
 
-# 3 : Déf récupération du dernier TS de la table ou date début de la  :
-def start_end_date_api():
-    """Cette définition sert à récupérer soit la TS la plus récente dans la
-    BDD/table, soit à commencer depuis le premier jour de la sonde"""
-
-    # Enddate : aujourd'hui à minuit en TS :
+# 3 : Définitions  :
+def today_ts():
+    """Récupération de la date du jour à 00h00 en TS"""
     today = datetime.date.today()
     today_midnight = datetime.datetime.combine(today, datetime.time.min)
     end_date = int(today_midnight.timestamp())
 
-    # Startdate : 1er jour de la sonde ou dernier TS enregistré dans la BDD :
+    return end_date
+
+
+def start_station():
+    """Transformation de la date du début de la station en TS"""
+    start_day = datetime.datetime(2021, 9, 29, 0, 0)
+    start_day = int(start_day.timestamp())
+    if_exists = "replace"  # informations pour la BDD
+
+    return start_day, if_exists
+
+
+def last_ts_bdd():
+    """Récupération de la dernière TS dans la base de données"""
+    # Connexion à la base de données
+    conn = psycopg2.connect(
+        dbname=database,
+        user=user,
+        password=password,
+        host=host,
+    )
+    cur = conn.cursor()
+
+    # Exécution d'une requête SQL et récupération de la TS :
+    cur.execute(f"SELECT ts FROM {nom_table} ORDER BY ts DESC LIMIT 1")
+    data_extract = cur.fetchall()
+    last_ts = pd.DataFrame(
+        data_extract, columns=[desc[0] for desc in cur.description]
+    ).values[0][0]
+    if_exists = "append"  # informations pour la BDD
+
+    # Fermeture du curseur et de la connexion
+    cur.close()
+    conn.close()
+
+    return last_ts, if_exists
+
+
+def start_api():
+    """Choix de la TS de début à utiliser, en fonction de si la bdd est vide
+    (historique) ou qu'elle contient déjà des données (routine)"""
+
     try:  # Présence d'une TS dans la table :
-        # Connexion à la base de données
-        conn = psycopg2.connect(
-            dbname=database, user=user, password=password, host=host
-        )
-        cur = conn.cursor()
-
-        # Exécution d'une requête SQL et récupération de la TS :
-        cur.execute(f"SELECT ts FROM {nom_table} ORDER BY ts DESC LIMIT 1")
-        data_extract = cur.fetchall()
-        start_date = pd.DataFrame(
-            data_extract, columns=[desc[0] for desc in cur.description]
-        ).values[0][0]
-        if_exists = "append"  # informations pour la BDD
-
-        # Fermeture du curseur et de la connexion
-        cur.close()
-        conn.close()
+        start_date = last_ts_bdd()[0]
+        if_exists = last_ts_bdd()[1]
 
     except psycopg2.ProgrammingError:  # Gérer l'erreur connexion BDD
-        # Date du début de la station en TS :
-        start_station = datetime.datetime(2021, 9, 29, 0, 0)
-        start_date = int(start_station.timestamp())
-        if_exists = "replace"  # informations pour la BDD
+        start_date = start_station()[0]
+        if_exists = start_station()[1]
 
-    return start_date, end_date, if_exists
+    return start_date, if_exists
 
 
 # 4 : Ouverture de l'API
@@ -77,8 +98,8 @@ def start_end_date_api():
 df_ajout = pd.DataFrame()
 
 # Start et End date :
-start_date_api = start_end_date_api()[0]
-end_date_api = start_end_date_api()[1]
+start_date_api = start_api()[0]
+end_date_api = today_ts()
 
 # Nb de jours à récupérer :
 nb_jours = int((end_date_api - start_date_api) / 86400)
@@ -146,7 +167,7 @@ dtype = {"station_id": Integer(), "ts": BigInteger(), "infos_json": JSON}
 df_ajout.to_sql(
     nom_table,
     engine,
-    if_exists=start_end_date_api()[2],
+    if_exists=start_api()[1],
     index=False,
     dtype=dtype,
 )
