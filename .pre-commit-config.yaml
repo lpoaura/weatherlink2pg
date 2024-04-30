@@ -27,4 +27,4 @@ repos:
     rev: v3.1.0
     hooks:
       - id: pylint
-        args: [--disable=import-error]
+        args: [--disable=import-error, --disable=no-value-for-parameter]
