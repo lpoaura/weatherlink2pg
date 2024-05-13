@@ -137,7 +137,7 @@ def one_day_data(start_date_api, end_date_api):
             # Concaténation des données :
             df_ajout = pd.concat([df_ajout, df_jour], ignore_index=True)
         else:
-            print(f"La requête {link} a échoué, code erreur : {r.status_code}")
+            echo_failure(f"La requête {link} a échoué, code erreur : {r.status_code}")
 
     return df_ajout
 
@@ -185,56 +185,43 @@ def echo_failure(message):
 
 
 # 4 : Utilisation de la routine de récupération des données via click :
+@click.group()
+# @click.option("--debug", default=False)
+def cli():
+    """Weatherlink2PG CLI app"""
+    # echo_success(f"Debug mode is {'on' if debug else 'off'}")
 
 
-@click.command()
-@click.option(
-    "--full",
-    is_flag=True,
-    help="""Option de récupération des donnes depuis le début de la sonde
-    avec une réinitialisation de la table.""",
-)
-@click.option(
-    "--update",
-    is_flag=True,
-    help="Option de mise à jour et d'ajout des données à la table.",
-)
-def main(full, update):
-    """Permet à la fonction click de choisir entre récupérer toutes les données
-    ou updater les nouvelles données."""
+@cli.command("full")
+def full():
+    """Commande de récupération des donnes depuis le début de la sonde
+    avec une réinitialisation de la table."""
+    echo_success(
+        "Lancement du script de téléchargement complet des données"
+    )
+    first_day_station, if_exists_bdd = start_station()
+    end_api = today_ts()
+    df_news = one_day_data(first_day_station, end_api)
+    up_to_bdd(df_news, if_exists_bdd)
+    echo_success("Le script s'est exécuté avec succès.")
 
-    if not (full or update):
-        raise click.UsageError(
-            """Vous devez spécifier une des options:
-                               --full ou --update."""
-        )
 
-    if full:
-        echo_success(
-            """Le script de récupération totale des données
-                     a été lancé avec succés."""
-        )
-        first_day_station, if_exists_bdd = start_station()
-        end_api = today_ts()
-        df_news = one_day_data(first_day_station, end_api)
-        up_to_bdd(df_news, if_exists_bdd)
-        echo_success("Le script s'est exécuté avec succès.")
+@cli.command("update")
+def update():
+    """Commande de mise à jour et d'ajout des données à la table."""
 
-    if update:
-        echo_success(
-            """Le script de mise à jour des données
-                     a été lancé avec succès."""
-        )
-        last_ts, if_exists_bdd = last_ts_bdd()
-        end_api = today_ts()
-        df_news = one_day_data(last_ts, end_api)
-        up_to_bdd(df_news, if_exists_bdd)
-        echo_success("Le script s'est exécuté avec succès.")
-
+    echo_success(
+        "Lancement du script de mise à jour des données"
+    )
+    last_ts, if_exists_bdd = last_ts_bdd()
+    end_api = today_ts()
+    df_news = one_day_data(last_ts, end_api)
+    up_to_bdd(df_news, if_exists_bdd)
+    echo_success("Le script s'est exécuté avec succès.")
 
 if __name__ == "__main__":
     try:
-        main()
+        cli()
     except click.UsageError as e:
         echo_failure(f"Erreur d'utilisation : {e}")
     except click.Abort:
