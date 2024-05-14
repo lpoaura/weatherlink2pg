@@ -1,0 +1,9 @@
+.env
+.ipynb_checkpoints/
+Notebooks/
+script_historique.py
+script_routine.py
+__pycache__/
+script_global.py
+lpo_aura/
+scripts/__pycache__/
