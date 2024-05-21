@@ -1603,6 +1603,7 @@ files = [
     {file = "PyYAML-6.0.1-cp311-cp311-win_amd64.whl", hash = "sha256:bf07ee2fef7014951eeb99f56f39c9bb4af143d8aa3c21b1677805985307da34"},
     {file = "PyYAML-6.0.1-cp312-cp312-macosx_10_9_x86_64.whl", hash = "sha256:855fb52b0dc35af121542a76b9a84f8d1cd886ea97c84703eaa6d88e37a2ad28"},
     {file = "PyYAML-6.0.1-cp312-cp312-macosx_11_0_arm64.whl", hash = "sha256:40df9b996c2b73138957fe23a16a4f0ba614f4c0efce1e9406a184b6d07fa3a9"},
+    {file = "PyYAML-6.0.1-cp312-cp312-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:a08c6f0fe150303c1c6b71ebcd7213c2858041a7e01975da3a99aed1e7a378ef"},
     {file = "PyYAML-6.0.1-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:6c22bec3fbe2524cde73d7ada88f6566758a8f7227bfbf93a408a9d86bcc12a0"},
     {file = "PyYAML-6.0.1-cp312-cp312-musllinux_1_1_x86_64.whl", hash = "sha256:8d4e9c88387b0f5c7d5f281e55304de64cf7f9c0021a3525bd3b1c542da3b0e4"},
     {file = "PyYAML-6.0.1-cp312-cp312-win32.whl", hash = "sha256:d483d2cdf104e7c9fa60c544d92981f12ad66a457afae824d146093b8c294c54"},
@@ -1973,21 +1974,21 @@ test = ["pytest"]
 
 [[package]]
 name = "spyder-kernels"
-version = "2.4.4"
+version = "2.5.1"
 description = "Jupyter kernels for Spyder's console"
 optional = false
 python-versions = "*"
 files = [
-    {file = "spyder-kernels-2.4.4.tar.gz", hash = "sha256:363bb0a0e1594cb691637464192f4f19969095469252242b43c092bf305a25dd"},
-    {file = "spyder_kernels-2.4.4-py2.py3-none-any.whl", hash = "sha256:2a9462db447f74c6db2ad6a6f76b9081b38e2b39c3e5d21ebf681f423329d85d"},
+    {file = "spyder-kernels-2.5.1.tar.gz", hash = "sha256:05042a3f97b25f17cdfa8d75011fd79aaf027523348a9dfff0f5a20bddb0b9b0"},
+    {file = "spyder_kernels-2.5.1-py2.py3-none-any.whl", hash = "sha256:69ac6937196337d2486e16b11601aaf080bb771927f53b47fe8899978d820968"},
 ]
 
 [package.dependencies]
 cloudpickle = "*"
-ipykernel = {version = ">=6.23.2,<7", markers = "python_version >= \"3\""}
-ipython = {version = ">=7.31.1,<8.8.0 || >8.8.0,<8.9.0 || >8.9.0,<8.10.0 || >8.10.0,<8.11.0 || >8.11.0,<8.12.0 || >8.12.0,<8.12.1 || >8.12.1,<9", markers = "python_version >= \"3\""}
+ipykernel = {version = ">=6.29.3,<7", markers = "python_version >= \"3.8\""}
+ipython = {version = ">=8.13.0,<8.17.1 || >8.17.1,<9", markers = "python_version > \"3.8\""}
 jupyter-client = {version = ">=7.4.9,<9", markers = "python_version >= \"3\""}
-pyzmq = {version = ">=22.1.0", markers = "python_version >= \"3\""}
+pyzmq = {version = ">=24.0.0", markers = "python_version >= \"3\""}
 wurlitzer = {version = ">=1.0.3", markers = "platform_system != \"Windows\""}
 
 [package.extras]
@@ -2275,4 +2276,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "jaraco.test", "more
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9"
-content-hash = "d6a5f18064fa9de032d89524b198f7d6bda7573f3ae2fad09cf6d1d55ef95548"
+content-hash = "5fc22d68391b68957a8d192529233cf97c48f706f410bdc3248d90855767beaa"
