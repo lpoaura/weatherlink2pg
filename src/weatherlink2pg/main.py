@@ -6,7 +6,8 @@ Et ce jusqu'à 00h00 du jour J"""
 import warnings
 
 import click
-from script_def import (
+
+from .helpers import (
     echo_failure,
     echo_success,
     last_ts_bdd,
@@ -33,7 +34,7 @@ warnings.filterwarnings("ignore", category=FutureWarning)
     is_flag=True,
     help="Option de mise à jour et d'ajout des données à la table.",
 )
-def main(full, update):
+def main(full: bool = False, update: bool = False) -> None:
     """Permet à la fonction click de choisir entre récupérer toutes les données
     ou updater les nouvelles données."""
 
