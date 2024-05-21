@@ -42,6 +42,7 @@ tqdm = "^4.66.2"
 python-dotenv = "^1.0.1"
 sqlalchemy = "^2.0.29"
 psycopg2-binary = ">=2.9.3"
+click = "^8.1.7"
 
 
 [tool.poetry.group.dev.dependencies]
