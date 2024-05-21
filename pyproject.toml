@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "lpo-aura"
+name = "weatherlink2pg"
 version = "0.1.0"
 description = ""
 authors = ["Johan Rocheteau <johan.rocheteau@hotmail.fr>"]
