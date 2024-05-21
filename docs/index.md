@@ -8,9 +8,9 @@
 ```{toctree}
 :caption: 'Contents:'
 :maxdepth: 2
-installation
-contribute
-history
+source/installation
+source/contribute
+source/history
 ```
 
 # Indices and tables

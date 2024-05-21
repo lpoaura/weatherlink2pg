@@ -20,7 +20,7 @@ release = meta["Version"]
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 
 
-templates_path = ["_templates"]
+templates_path = ["source/_templates"]
 extensions = ["myst_parser"]
 
 source_suffix = {
@@ -33,5 +33,5 @@ source_suffix = {
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
 
 # html_theme = 'alabaster'
-html_static_path = ["_static"]
+html_static_path = ["source/_static"]
 html_theme = "sphinx_book_theme"  # pylint: disable=C0103
