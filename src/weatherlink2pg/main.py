@@ -4,6 +4,7 @@ Et ce jusqu'à 00h00 du jour J"""
 
 # 1 : Librairies et options
 import warnings
+from importlib.metadata import version
 from typing import Optional
 
 import click
@@ -28,6 +29,12 @@ warnings.filterwarnings("ignore", category=FutureWarning)
 def cli():
     """Weatherlink2PG CLI app"""
     # echo_success(f"Debug mode is {'on' if debug else 'off'}")
+
+
+@cli.command("version")
+def get_version():
+    """Get version"""
+    print(version("weatherlink2pg"))
 
 
 @cli.command("full")
