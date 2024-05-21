@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "weatherlink2pg"
-version = "0.1.0"
+version = "0.1.1"
 description = "Simple python app to store weatherlink data into PostgreSQL through API"
 authors = [
     "Johan Rocheteau <johan.rocheteau@hotmail.fr>",
@@ -42,6 +42,7 @@ tqdm = "^4.66.2"
 python-dotenv = "^1.0.1"
 sqlalchemy = "^2.0.29"
 psycopg2 = "^2.9.9"
+psycopg2-binary = "^2.9.9"
 
 
 [tool.poetry.group.dev.dependencies]

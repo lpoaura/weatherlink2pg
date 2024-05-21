@@ -8,4 +8,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 
 ## 0.1.0 - 2024-05-21
 
+* Fix psycopg2-binary version
+
+## 0.1.0 - 2024-05-21
+
 * First official release
