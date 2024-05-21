@@ -3,7 +3,6 @@ click ainsi que les clés API et BDD."""
 
 # 1 : Librairies et options
 import datetime
-import json
 import os
 
 import click
@@ -13,7 +12,7 @@ import requests
 import tqdm
 from dotenv import load_dotenv
 from sqlalchemy import create_engine
-from sqlalchemy.types import JSON, BigInteger, Integer
+from sqlalchemy.dialects.postgresql import BIGINT, INTEGER, JSONB
 
 # 2 : Clés API et BDD via .env + url API
 # Informations API : https://weatherlink.github.io/v2-api/
@@ -21,16 +20,19 @@ from sqlalchemy.types import JSON, BigInteger, Integer
 load_dotenv()
 
 # Clés API :
-API_key = os.getenv("API_key")
-API_secret = os.getenv("API_secret")
-station_ID = os.getenv("station_ID")
+API_key = os.getenv("WEATHERLINK2PG_API_KEY")
+API_secret = os.getenv("WEATHERLINK2PG_API_SECRET")
+station_ID = os.getenv("WEATHERLINK2PG_API_STATIONID")
 
 # Paramètres de connexion à la base de données PostgreSQL en local :
-host = os.getenv("host")
-database = os.getenv("database")
-user = os.getenv("user")
-password = os.getenv("password")
-nom_table = os.getenv("nom_table")
+host = os.getenv("WEATHERLINK2PG_PG_HOST", default="localhost")
+database = os.getenv("WEATHERLINK2PG_PG_DATABASE", default="weatherlink")
+port = os.getenv("WEATHERLINK2PG_PG_PORT", default="5432")
+user = os.getenv("WEATHERLINK2PG_PG_USER")
+password = os.getenv("WEATHERLINK2PG_PG_PWD")
+table_name = os.getenv("WEATHERLINK2PG_PG_TABLE", default="data")
+schema_name = os.getenv("WEATHERLINK2PG_PG_SCHEMA", default=None)
+relation = f"{schema_name}.{table_name}" if schema_name else table_name
 
 
 # 3 : Définitions  :
@@ -43,12 +45,32 @@ def today_ts():
     return end_date
 
 
-def start_station():
+def start_station(since: str):
     """Transformation de la date du début de la station en TS."""
-    start_day = datetime.datetime(2021, 9, 29, 0, 0)
-    start_day = int(start_day.timestamp())
+    since = since if since else "2021-09-29"
+    start_day = int(datetime.datetime.strptime(since, "%Y-%m-%d").timestamp())
     if_exists = "replace"  # informations pour la BDD
     return start_day, if_exists
+
+
+def create_schema():
+    """Create data schema if defined"""
+    echo_success("CREATE SCHEMA")
+    conn = psycopg2.connect(
+        dbname=database,
+        user=user,
+        password=password,
+        host=host,
+        port=port,
+    )
+    cur = conn.cursor()
+
+    # Exécution d'une requête SQL et récupération de la TS :
+    cur.execute(f"CREATE SCHEMA IF NOT EXISTS {schema_name}")
+    conn.commit()
+    # Fermeture du curseur et de la connexion
+    cur.close()
+    conn.close()
 
 
 def last_ts_bdd():
@@ -59,11 +81,11 @@ def last_ts_bdd():
         user=user,
         password=password,
         host=host,
+        port=port,
     )
     cur = conn.cursor()
-
     # Exécution d'une requête SQL et récupération de la TS :
-    cur.execute(f"SELECT ts FROM {nom_table} ORDER BY ts DESC LIMIT 1")
+    cur.execute(f"SELECT ts FROM {relation} ORDER BY ts DESC LIMIT 1")
     data_extract = cur.fetchall()
     last_ts = pd.DataFrame(
         data_extract, columns=[desc[0] for desc in cur.description]
@@ -122,16 +144,15 @@ def one_day_data(start_date_api, end_date_api):
                 }
             )
 
-            # Convertir les objets JSON en chaînes de caractères JSON :
-            df_jour["infos_json"] = df_jour["infos_json"].apply(json.dumps)
-
             # Concat des données :
             df_jour = pd.concat([df_jour, df_sensors], axis=1)
 
             # Concaténation des données :
             df_ajout = pd.concat([df_ajout, df_jour], ignore_index=True)
         else:
-            print(f"La requête {link} a échoué, code erreur : {r.status_code}")
+            echo_failure(
+                f"La requête {link} a échoué, code erreur : {r.status_code}"
+            )
 
     return df_ajout
 
@@ -139,19 +160,21 @@ def one_day_data(start_date_api, end_date_api):
 def up_to_bdd(df_ajout, if_exists):
     """Ajout des données dans la BDD."""
     # Connexion de la chaîne de connexion PostgreSQL :
-    conn_str = f"postgresql://{user}:{password}@{host}/{database}"
+    conn_str = f"postgresql://{user}:{password}@{host}:{port}/{database}"
     engine = create_engine(conn_str)
 
     # Définir les types de données pour chaque colonne :
-    dtype = {"station_id": Integer(), "ts": BigInteger(), "infos_json": JSON}
-
+    dtype = {"station_id": INTEGER, "ts": BIGINT, "infos_json": JSONB}
+    if schema_name is not None:
+        create_schema()
     # Insérer le DataFrame dans la base de données PostgreSQL :
     df_ajout.to_sql(
-        nom_table,
+        table_name,
         engine,
         if_exists=if_exists,
         index=False,
         dtype=dtype,
+        schema=schema_name,
     )
 
     # Fermeture de la connexion :

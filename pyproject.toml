@@ -1,8 +1,11 @@
 [tool.poetry]
 name = "weatherlink2pg"
 version = "0.1.0"
-description = ""
-authors = ["Johan Rocheteau <johan.rocheteau@hotmail.fr>"]
+description = "Simple python app to store weatherlink data into PostgreSQL through API"
+authors = [
+    "Johan Rocheteau <johan.rocheteau@hotmail.fr>",
+    "Frédéric CLOITRE <no-reply@lpo.fr>",
+]
 readme = "README.md"
 packages = [{include = "weatherlink2pg", from = "src"}]
 
@@ -36,3 +39,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.isort]
 profile = "black"
+
+[tool.black]
+# The keys are the long option names what black accept on the command line.
+line-length = 80
