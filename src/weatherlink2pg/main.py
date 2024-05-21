@@ -32,11 +32,13 @@ API_secret = os.getenv("API_secret")
 station_ID = os.getenv("station_ID")
 
 # Paramètres de connexion à la base de données PostgreSQL en local :
-host = os.getenv("host")
+host = os.getenv("host", default="localhost")
+port = os.getenv("port", default="5432")
 database = os.getenv("database")
 user = os.getenv("user")
 password = os.getenv("password")
-nom_table = os.getenv("nom_table")
+nom_table = os.getenv("nom_table", default="data")
+nom_schema = os.getenv("nom_schema", default="weatherlink")
 
 
 # 3 : Définitions  :
@@ -65,6 +67,7 @@ def last_ts_bdd():
         user=user,
         password=password,
         host=host,
+        port=port
     )
     cur = conn.cursor()
 
@@ -155,6 +158,7 @@ def up_to_bdd(df_ajout, if_exists):
     df_ajout.to_sql(
         nom_table,
         engine,
+        schema=nom_schema,
         if_exists=if_exists,
         index=False,
         dtype=dtype,
@@ -196,9 +200,7 @@ def cli():
 def full():
     """Commande de récupération des donnes depuis le début de la sonde
     avec une réinitialisation de la table."""
-    echo_success(
-        "Lancement du script de téléchargement complet des données"
-    )
+    echo_success("Lancement du script de téléchargement complet des données")
     first_day_station, if_exists_bdd = start_station()
     end_api = today_ts()
     df_news = one_day_data(first_day_station, end_api)
@@ -210,14 +212,13 @@ def full():
 def update():
     """Commande de mise à jour et d'ajout des données à la table."""
 
-    echo_success(
-        "Lancement du script de mise à jour des données"
-    )
+    echo_success("Lancement du script de mise à jour des données")
     last_ts, if_exists_bdd = last_ts_bdd()
     end_api = today_ts()
     df_news = one_day_data(last_ts, end_api)
     up_to_bdd(df_news, if_exists_bdd)
     echo_success("Le script s'est exécuté avec succès.")
+
 
 if __name__ == "__main__":
     try:
