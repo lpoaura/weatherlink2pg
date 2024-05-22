@@ -46,7 +46,7 @@ click = "^8.1.7"
 
 
 [tool.poetry.group.dev.dependencies]
-spyder-kernels = "==2.4.*"
+spyder-kernels = ">=2.4,<2.6"
 ipykernel = "^6.29.4"
 black = "^24.4.1"
 isort = "^5.13.2"
