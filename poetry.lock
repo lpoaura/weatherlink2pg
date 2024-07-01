@@ -1974,13 +1974,13 @@ test = ["pytest"]
 
 [[package]]
 name = "spyder-kernels"
-version = "2.5.1"
+version = "2.5.2"
 description = "Jupyter kernels for Spyder's console"
 optional = false
 python-versions = "*"
 files = [
-    {file = "spyder-kernels-2.5.1.tar.gz", hash = "sha256:05042a3f97b25f17cdfa8d75011fd79aaf027523348a9dfff0f5a20bddb0b9b0"},
-    {file = "spyder_kernels-2.5.1-py2.py3-none-any.whl", hash = "sha256:69ac6937196337d2486e16b11601aaf080bb771927f53b47fe8899978d820968"},
+    {file = "spyder_kernels-2.5.2-py2.py3-none-any.whl", hash = "sha256:1c95bc09ca20f54c981e7d923708df85c6d6583f683e23923e10d524628bc000"},
+    {file = "spyder_kernels-2.5.2.tar.gz", hash = "sha256:71f252900e02b0394820cc7049f89ed725243f6fccf640b76dd329203c413960"},
 ]
 
 [package.dependencies]
