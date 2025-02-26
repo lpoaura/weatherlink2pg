@@ -4,14 +4,18 @@ Et ce jusqu'à 00h00 du jour J"""
 
 # 1 : Librairies et options
 import warnings
-from importlib.metadata import version
+from importlib.metadata import metadata
 from typing import Optional
 
 import click
 
 from .helpers import (
+    echo_default,
     echo_failure,
+    echo_info,
     echo_success,
+    get_station_ids,
+    get_stations_infos,
     last_ts_bdd,
     one_day_data,
     start_station,
@@ -34,7 +38,17 @@ def cli():
 @cli.command("version")
 def get_version():
     """Get version"""
-    print(version("weatherlink2pg"))
+
+    app_metadata = metadata("weatherlink2pg")
+    echo_default(app_metadata["name"])
+    echo_info(f"version {app_metadata['Version']}")
+    echo_info(app_metadata["Summary"])
+
+
+@cli.command("stations")
+def get_stations():
+    """Get version"""
+    get_stations_infos()
 
 
 @cli.command("full")
@@ -43,27 +57,44 @@ def get_version():
     "-s",
     help="Date la plus ancienne à laquelle remonter (format AAAA-MM-JJ)",
 )
-def full(since: Optional[str] = None):
+@click.option("--station_id", "-i", help="ID de la station")
+def full(since: Optional[str] = None, station_id: Optional[str] = None):
     """Commande de récupération des donnes depuis le début de la sonde
     avec une réinitialisation de la table."""
-    echo_success("Lancement du script de téléchargement complet des données")
-    first_day_station, if_exists_bdd = start_station(since)
+    echo_info("Lancement du script de téléchargement complet des données")
 
+    stations = (
+        get_station_ids()
+        if not station_id
+        else [
+            station_id,
+        ]
+    )
     end_api = today_ts()
-    df_news = one_day_data(first_day_station, end_api)
+    first_day_station, if_exists_bdd = start_station(since)
+    df_news = one_day_data(stations, first_day_station, end_api)
     up_to_bdd(df_news, if_exists_bdd)
     echo_success("Le script s'est exécuté avec succès.")
 
 
 @cli.command("update")
-def update():
+@click.option("--station_id", "-i", help="ID de la station")
+def update(station_id: Optional[str] = None):
     """Commande de mise à jour et d'ajout des données à la table."""
 
-    echo_success("Lancement du script de mise à jour des données")
-    last_ts, if_exists_bdd = last_ts_bdd()
+    echo_info("Lancement du script de mise à jour des données")
+    stations = (
+        get_station_ids()
+        if not station_id
+        else [
+            station_id,
+        ]
+    )
     end_api = today_ts()
-    df_news = one_day_data(last_ts, end_api)
-    up_to_bdd(df_news, if_exists_bdd)
+    for station in stations:
+        last_ts, if_exists_bdd = last_ts_bdd(station)
+        df_news = one_day_data(station, last_ts or start_station, end_api)
+        up_to_bdd(df_news, if_exists_bdd)
     echo_success("Le script s'est exécuté avec succès.")
 
 
