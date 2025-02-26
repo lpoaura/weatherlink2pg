@@ -4,7 +4,7 @@ click ainsi que les clés API et BDD."""
 # 1 : Librairies et options
 import datetime
 import os
-
+import urllib.parse
 import click
 import pandas as pd
 import psycopg2
@@ -111,18 +111,14 @@ def one_day_data(start_date_api, end_date_api):
         start_time = start_date_api + i * 86400
         end_time = start_time + 86400
 
-        # Lien de la request :
-        link = (
-            f"https://api.weatherlink.com/v2/historic/{station_ID}?"  # URL
-            f"api-key={API_key}&"  # Clé API
-            f"start-timestamp={start_time}&"  # Timestamp de début
-            f"end-timestamp={end_time}"  # Timestamp de fin
-        )
+        root_url = f"https://api.weatherlink.com/v2/historic/{station_ID}?"
+        params = {'api-key': API_key, 'start-timestamp': start_time, 'end-timestamp': end_time}
+        url = root_url + urllib.parse.urlencode(params)
 
         headers = {"X-Api-Secret": API_secret}
 
         # Requête :
-        r = requests.get(link, headers=headers, timeout=60)
+        r = requests.get(url, headers=headers, timeout=60)
 
         # Si la requête a réussi :
         if r.status_code == 200:
@@ -151,7 +147,7 @@ def one_day_data(start_date_api, end_date_api):
             df_ajout = pd.concat([df_ajout, df_jour], ignore_index=True)
         else:
             echo_failure(
-                f"La requête {link} a échoué, code erreur : {r.status_code}"
+                f"La requête {url} a échoué, code erreur : {r.status_code} / {r.json()}"
             )
 
     return df_ajout
