@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "weatherlink2pg"
-version = "1.0.0"
+version = "1.0.1"
 description = "Simple python app to store weatherlink data into PostgreSQL through API"
 authors = [
     "Johan Rocheteau <johan.rocheteau@hotmail.fr>",
