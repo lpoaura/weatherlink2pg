@@ -75,7 +75,7 @@ def create_schema():
     conn.close()
 
 
-def last_ts_bdd(station: int):
+def last_ts_bdd():
     """Récupération de la dernière TS enregistrée dans la base de données."""
     # Connexion à la base de données
     conn = psycopg2.connect(
@@ -87,10 +87,7 @@ def last_ts_bdd(station: int):
     )
     cur = conn.cursor()
     # Exécution d'une requête SQL et récupération de la TS :
-    cur.execute(
-        f"""SELECT ts FROM {relation} WHERE station_id = {str(station)} """
-        "ORDER BY ts DESC LIMIT 1"
-    )
+    cur.execute(f"""SELECT ts FROM {relation} """ "ORDER BY ts DESC LIMIT 1")
     data_extract = cur.fetchall()
     last_ts = pd.DataFrame(
         data_extract, columns=[desc[0] for desc in cur.description]

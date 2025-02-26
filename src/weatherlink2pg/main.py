@@ -91,10 +91,9 @@ def update(station_id: Optional[str] = None):
         ]
     )
     end_api = today_ts()
-    for station in stations:
-        last_ts, if_exists_bdd = last_ts_bdd(station)
-        df_news = one_day_data(station, last_ts or start_station, end_api)
-        up_to_bdd(df_news, if_exists_bdd)
+    last_ts, if_exists_bdd = last_ts_bdd()
+    df_news = one_day_data(stations, last_ts or start_station, end_api)
+    up_to_bdd(df_news, if_exists_bdd)
     echo_success("Le script s'est exécuté avec succès.")
 
 
