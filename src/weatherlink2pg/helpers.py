@@ -180,9 +180,7 @@ def process_station_data(data: dict) -> pd.DataFrame:
             "infos_json": data["sensors"][0]["data"],
         }
     )
-    df_sensors = pd.json_normalize(
-        data["sensors"][0]["data"]
-    )  # Aller chercher l'
+    df_sensors = pd.json_normalize(data["sensors"][0]["data"])
     return pd.concat([df_jour, df_sensors], axis=1)
 
 
