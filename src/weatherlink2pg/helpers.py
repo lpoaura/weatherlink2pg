@@ -170,13 +170,19 @@ def fetch_station_data(
 
 def process_station_data(data: dict) -> pd.DataFrame:
     """Process the JSON data for a station into a DataFrame."""
+    # pylint: disable-next=fixme
+    # TODO: Search for the item containing the meter reading data,
+    # which can be identified by the value of
+    # data > ‘sensors’ > item > ‘data_structure_type’.
     df_jour = pd.DataFrame(
         {
             "station_id": data["station_id"],
             "infos_json": data["sensors"][0]["data"],
         }
     )
-    df_sensors = pd.json_normalize(data["sensors"][0]["data"])
+    df_sensors = pd.json_normalize(
+        data["sensors"][0]["data"]
+    )  # Aller chercher l'
     return pd.concat([df_jour, df_sensors], axis=1)
 
 
